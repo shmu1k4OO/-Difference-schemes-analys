@@ -2,9 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-L = 10
-
-
 def f(x, t):
     return 0
 
@@ -28,6 +25,8 @@ def g_L(t):
 def exact_solve(x, t):
     return 2 * x + 3 * t + 5
 
+# X
+L = 10
 
 nx = 100
 
@@ -35,11 +34,10 @@ dx = L / (nx - 1)
 
 x = np.linspace(0, L, nx)
 
-alpha = 1
+# T
+T = 100
 
 nt = 1000
-
-T = 100
 
 dt = T / (nt - 1)
 
@@ -49,27 +47,30 @@ u = np.zeros((nt, nx))
 
 v = np.array(dphi(x))
 
-u[0, :] = phi(x)
-
-u[:, 0] = g_0(t)
+alpha = 1
 
 
-u[:, -1] = g_L(t)
+def solve_with_method_1(u, x, t, v, dt, dx, alpha):
 
-u[1, :] = u[0, :] + dt * v
+    u[0, :] = phi(x)
+    u[:, 0] = g_0(t)
+    u[:, -1] = g_L(t)
+    u[1, :] = u[0, :] + dt * v
 
-for j in range(1, nt-1):
-    for i in range(1, nx-1):
-        u[j+1][i] = 2 * u[j][i] - u[j-1][i] + dt**2 / dx**2 * alpha * (u[j][i+1] - 2*u[j][i] + u[j][i-1])
-        + dt**2 *f(x[i], t[j])
+    for j in range(1, nt-1):
+        for i in range(1, nx-1):
+            u[j+1][i] = 2 * u[j][i] - u[j-1][i] + dt**2 / dx**2 * alpha * (u[j][i+1] - 2*u[j][i] + u[j][i-1])
+            + dt**2 *f(x[i], t[j])
     
+    return u
+
+u = solve_with_method_1(u, x, t, v, dt, dx, alpha)
 X, T_grid = np.meshgrid(x, t)
 u_exact = exact_solve(X, T_grid)
 
 error = np.max(np.abs(u - u_exact))
 
 print(error)
-
 
 
 #моменты времени от t = 0 до t = 5
