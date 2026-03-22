@@ -1,0 +1,15 @@
+# LaTeX временные файлы
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
