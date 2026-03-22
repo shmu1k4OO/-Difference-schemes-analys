@@ -1,29 +1,30 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def f(x, t):
-    return 0
+    return -2 
 
 
 def phi(x):
-    return 2 * x + 5
+    return x**2 + 1
 
 
 def dphi(x):
-    return 3 * np.ones_like(x)
+    return 2 * np.ones_like(x)
 
 
 def g_0(t):
-    return 3 * t + 5
+    return 2 * t + 1
 
 
-def g_L(t):
-    return 3 * t + 2 * L + 5
+def g_L(t, L):
+    return L**2 + 2 * t + 1
 
 
 def exact_solve(x, t):
-    return 2 * x + 3 * t + 5
+    return x ** 2 + 2 * t + 1
 
 # X
 L = 10
@@ -49,28 +50,47 @@ v = np.array(dphi(x))
 
 alpha = 1
 
+print(alpha * dt**2 / dx**2 < 1)
 
-def solve_with_method_1(u, x, t, v, dt, dx, alpha):
+def solve_with_method_1(u, x, t, v, dt, dx, nx, alpha, f, L):
 
     u[0, :] = phi(x)
     u[:, 0] = g_0(t)
-    u[:, -1] = g_L(t)
-    u[1, :] = u[0, :] + dt * v
+    u[:, -1] = g_L(t, L)
+
+    u_xx = np.zeros(nx)
+    for i in range(1, nx-1):
+        u_xx[i] = (u[0, i-1] - 2*u[0, i] + u[0, i+1]) / dx**2
+
+    u[1, :] = u[0, :] + dt * v + (dt**2/2) * (alpha * u_xx + f(x, 0))
+
+    u[1, 0] = g_0(t[1])
+    u[1, -1] = g_L(t[1], L)
 
     for j in range(1, nt-1):
         for i in range(1, nx-1):
-            u[j+1][i] = 2 * u[j][i] - u[j-1][i] + dt**2 / dx**2 * alpha * (u[j][i+1] - 2*u[j][i] + u[j][i-1])
-            + dt**2 *f(x[i], t[j])
+            u[j+1, i] = 2 * u[j, i] - u[j-1, i] + dt**2 / dx**2 * alpha * (u[j, i+1] - 2*u[j, i] + u[j, i-1]) + dt**2 *f(x[i], t[j])
     
     return u
 
-u = solve_with_method_1(u, x, t, v, dt, dx, alpha)
 X, T_grid = np.meshgrid(x, t)
 u_exact = exact_solve(X, T_grid)
 
-error = np.max(np.abs(u - u_exact))
+error_from_step = []
 
-print(error)
+for i in range(5):
+
+    u = solve_with_method_1(u, x, t, v, dt, dx, nx, alpha, f, L)
+
+    error = np.max(np.abs(u - u_exact))
+
+    error_from_step.append(error)
+
+    dt /= 2
+
+    dx /= 2
+
+    print(error, dt, dx)
 
 
 #моменты времени от t = 0 до t = 5
@@ -97,6 +117,4 @@ plt.grid(True)
 plt.legend()
 
 plt.show()
-
-
 
