@@ -1,184 +1,489 @@
 \documentclass[12pt,a4paper]{article}
 \usepackage[utf8]{inputenc}
+\usepackage[T2A]{fontenc}
 \usepackage[russian]{babel}
 \usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{caption}
+
+\textwidth  17,5cm  \textheight 26cm
+\topmargin  -18mm  \oddsidemargin  -8mm \evensidemargin -8mm
 
 \begin{document}
 
-\title{Лабораторная работа\\
-Исследование разностной схемы "Крест" для волнового уравнения}
-\author{Ваше Имя}
+\large
+
+\title{Исследование поведения разностных схем}
+\author{Зарипов Ленар А-14-23}
 \date{\today}
 \maketitle
 
-\section{Разностная схема}
+\section{Постановка задачи}
 
-\subsection{Формула разностного уравнения}
-Используется явная трехслойная схема "Крест":
-\begin{equation}
-\frac{u_j^{n+1} - 2u_j^n + u_j^{n-1}}{\tau^2} = a \frac{u_{j+1}^n - 2u_j^n + u_{j-1}^n}{h^2} + f(x_j, t_n)
-\label{eq:cross}
-\end{equation}
+В работе рассматривается начально-краевая задача для волнового уравнения. Реализовать разностные схемы: "крест", схема с весом $\sigma = 1/2$ и провести их экспериментальный численный анализ.
 
-\subsection{Шаблон}
-Шаблон схемы "Крест" включает 5 точек:
-\begin{itemize}
-    \item $(x_j, t_{n+1})$ — верхний слой
-    \item $(x_j, t_n)$ — текущий слой
-    \item $(x_j, t_{n-1})$ — нижний слой
-    \item $(x_{j+1}, t_n)$ и $(x_{j-1}, t_n)$ — соседние точки по пространству
-\end{itemize}
+\smallskip
 
-\subsection{Порядок аппроксимации}
-Схема имеет второй порядок аппроксимации:
-\begin{equation}
-\Delta = O(\tau^2 + h^2)
-\end{equation}
-
-\subsection{Условие устойчивости}
-Схема является условно устойчивой. Условие устойчивости (Куранта):
-\begin{equation}
-a \frac{\tau^2}{h^2} < 1
-\end{equation}
-При $a = 1$: $\tau < h$.
-
-\section{Построение тестовой задачи}
-
-Выбрано тестовое решение:
-\begin{equation}
-y(x,t) = x^2 + 2t + 1
-\end{equation}
-
-Подстановкой в волновое уравнение $y_{tt} = a y_{xx} + f$ получаем:
 \begin{align*}
-y_{tt} &= 0 \\
-y_{xx} &= 2 \\
-0 &= 1 \cdot 2 + f(x,t) \quad \Rightarrow \quad f(x,t) = -2
+\qquad
+&y_{tt} = a y_{xx} + f, \quad x\in (0,L), \ t\in(0,T),
+\\
+&y|_{t=0} = \varphi(x), \ \ y_t|_{t=0} = v(x),
+\\
+&y|_{x = 0} = g_0(t), \ \ y|_{x = L} = g_L(t).
 \end{align*}
 
-Начальные условия:
-\begin{align*}
-y(x,0) &= x^2 + 1 = \phi(x) \\
-y_t(x,0) &= 2 = v(x)
-\end{align*}
+Решение $y = y(t, x)$, $a > 0$
 
-Граничные условия:
-\begin{align*}
-y(0,t) &= 2t + 1 = g_0(t) \\
-y(L,t) &= L^2 + 2t + 1 = g_L(t)
-\end{align*}
+\section{Разностная схема "крест"}
 
-Таким образом, все функции, используемые в численной схеме, определены:
-\begin{align*}
-f(x,t) &= -2 \\
-\phi(x) &= x^2 + 1 \\
-v(x) &= 2 \\
-g_0(t) &= 2t + 1 \\
-g_L(t) &= L^2 + 2t + 1
-\end{align*}
+\paragraph{1. Формула разностного уравнения:}
 
-\section{Результаты численных экспериментов}
+\[
+\frac{y_i^{j+1} - 2y_i^j + y_i^{j-1}}{\tau^2} = a \frac{y_{i+1}^j - 2y_i^j + y_{i-1}^j}{h^2} + f_i^j,
+\]
 
-\subsection{Таблица погрешностей}
-Погрешность вычислялась в равномерной норме:
-\begin{equation}
-\Delta = \max_{j,k} |u_j^k - y(t_j, x_k)|
-\end{equation}
+\paragraph{2. Шаблон:}
 
-Результаты для различных комбинаций шагов $\tau$ и $h$ представлены в таблице \ref{tab:errors}.
+\[
+\begin{array}{ccccc}
+& & (i, j+1) & & \\
+& & \uparrow & & \\
+(i-1, j) & \leftarrow & (i, j) & \rightarrow & (i+1, j) \\
+& & \downarrow & & \\
+& & (i, j-1) & &
+\end{array}
+\]
 
-\begin{table}[H]
+\paragraph{3. Порядок аппроксимации:}
+
+\[
+\Psi = O(\tau^2 + h^2).
+\]
+
+\paragraph{4. Условие устойчивости:}
+
+Схема "крест" является условно устойчивой. 
+\[
+\frac{\sqrt{a}\,\tau}{h} \leqslant 1 \quad \Leftrightarrow \quad \tau \leqslant \frac{h}{\sqrt{a}}.
+\]
+
+\subsection{Тестовые задачи для разностной схемы "крест"}
+Параметры области: $L = 1$, $T = 10L = 10$, $a = 1$.
+ВАЖНО! Количетсво точек по x: 191
+Количество точек по t: 2001
+Об этом речь пойдёт далее в отчете после всех примеров, а пока просто возьмём такое число точек за базис.
+
+\subsubsection{Тест 1: Линейная функция}
+\[
+y(t,x) = 2x + 3t + 5
+\]
+\[
+y_{tt} = 0,\quad y_{xx} = 0 \quad\Rightarrow\quad f(t,x) = 0
+\]
+\[
+\varphi(x) = 2x + 5,\quad v(x) = 3
+\]
+\[
+g_0(t) = 3t + 5,\quad g_L(t) = 2L + 3t + 5
+\]
+
+
+
 \centering
-\caption{Таблица погрешностей $\Delta = \max|u - y|$}
-\begin{tabular}{|c|c|c|c|c|}
+\captionof{table}{Нормы погрешности при различных шагах сетки}
+\begin{tabular}{c|c|c|c|c}
 \hline
-$\tau$ $\backslash$ $h$ & $h_0$ & $h_0/2$ & $h_0/4$ & $h_0/8$ \\
+& $h_0$ & $h_0/2$ & $h_0/4$ & $h_0/8$ \\
 \hline
-$\tau_0$ & $1.01\times10^{-2}$ & unstable & unstable & unstable \\
-$\tau_0/2$ & $1.01\times10^{-2}$ & $5.04\times10^{-3}$ & unstable & unstable \\
-$\tau_0/4$ & $1.01\times10^{-2}$ & $5.04\times10^{-3}$ & $2.52\times10^{-3}$ & unstable \\
-$\tau_0/8$ & $1.01\times10^{-2}$ & $5.04\times10^{-3}$ & $2.52\times10^{-3}$ & $1.26\times10^{-3}$ \\
+$\tau_0$ & $5.542233 \times 10^{-13}$ & --- & --- & --- \\
+$\tau_0/2$ & $1.236344 \times 10^{-12}$ & $1.151079 \times 10^{-12}$ & --- & --- \\
+$\tau_0/4$ & $3.744560 \times 10^{-12}$ & $5.911716 \times 10^{-12}$ & $2.238210 \times 10^{-12}$ & --- \\
+$\tau_0/8$ & $2.201261 \times 10^{-11}$ & $9.116263 \times 10^{-12}$ & $5.542233 \times 10^{-12}$ & $5.769607 \times 10^{-12}$ \\
 \hline
 \end{tabular}
-\label{tab:errors}
-\end{table}
 
-\subsection{Анализ сходимости}
-По диагонали таблицы (одновременное уменьшение $\tau$ и $h$) вычислены отношения ошибок:
+\medskip
 
-\begin{table}[H]
+Полученные значения погрешности находятся на уровне машинной точности ($\sim 10^{-12} - 10^{-13}$),
+что свидетельствует о точном воспроизведении линейного решения разностной схемой. Это объясняется тем,
+что вторая производная тестовой функции равна нулю, и центральные разности второго порядка дают точное значение.
+
+
+\subparagraph{Устойчивое решение:}
+
 \centering
-\caption{Отношения ошибок и порядок сходимости}
-\begin{tabular}{|c|c|c|c|}
+\includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear/stable.png}
+\captionof{figure}{Устойчивое решение в разные моменты времени t}
+\label{fig:label}
+
+\medskip
+
+Далее будут показаны те графики, на которых решение разрушается. Они таблице погрешностей со значениями -- (прочерк или np.nan) в колонках.
+В эти моменты условие устойчивости нарушено: $\tau > h/\sqrt{a}$
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear/unstable_dt0_dx1.png}
+    \caption{Неустойчивое решение: $\tau_{0}, h_{0}/2$, courant=1.9}
+    \label{fig:linear_unstable1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear/unstable_dt0_dx2.png}
+    \caption{Неустойчивое решение: $\tau_{0}, h_{0}/4$, courant=3.8}
+    \label{fig:linear_unstable2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear/unstable_dt0_dx3.png}
+    \caption{Неустойчивое решение: $\tau_{0}, h_{0}/8$, courant=7.6}
+    \label{fig:linear_unstable3}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear/unstable_dt0_dx4.png}
+    \caption{Неустойчивое решение: $\tau_{0}/2, h_{0}/4$, courant=1.9}
+    \label{fig:linear_unstable4}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear/unstable_dt1_dx2.png}
+    \caption{Неустойчивое решение: $\tau_{0}/2, h_{0}/8$, courant=3.8}
+    \label{fig:linear_unstable5}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear/unstable_dt1_dx3.png}
+    \caption{Неустойчивое решение: $\tau_{0}/4, h_{0}/8$, courant=1.9}
+    \label{fig:linear_unstable6}
+\end{figure}
+
+\paragraph{Вывод:}
+в тесте с линейной функцией схема "крест" показала точное решение с погрешностью на уровне машинной точности, что подтверждает её свойство точно воспроизводить линейные функции. При нарушении условия устойчивости Куранта наблюдается разрушение решения, что соответствует теоретическим предсказаниям об условной устойчивости схемы.
+\subsubsection{Тест 2: Линейно-квадратичная функция}
+\[
+y(t,x) = x^2 + 2t + 1
+\]
+\[
+y_{tt} = 0,\quad y_{xx} = 2 \quad\Rightarrow\quad f(t,x) = -2a = -2
+\]
+\[
+\varphi(x) = x^2 + 1,\quad v(x) = 2
+\]
+\[
+g_0(t) = 2t + 1,\quad g_L(t) = L^2 + 2t + 1
+\]
+
+\medskip
+
+\centering
+\captionof{table}{Нормы погрешности при различных шагах сетки}
+\begin{tabular}{c|c|c|c|c}
 \hline
-Шаг & $\Delta_{i-1}$ & $\Delta_i$ & $\Delta_{i-1}/\Delta_i$ \\
+& $h_0$ & $h_0/2$ & $h_0/4$ & $h_0/8$ \\
 \hline
-1→2 & $1.01\times10^{-2}$ & $5.04\times10^{-3}$ & $2.00$ \\
-2→3 & $5.04\times10^{-3}$ & $2.52\times10^{-3}$ & $2.00$ \\
-3→4 & $2.52\times10^{-3}$ & $1.26\times10^{-3}$ & $2.00$ \\
+$\tau_0$ & $1.826450 \times 10^{-11}$ & --- & --- & --- \\
+$\tau_0/2$ & $1.787814 \times 10^{-11}$ & $1.782574 \times 10^{-11}$ & --- & --- \\
+$\tau_0/4$ & $1.414122 \times 10^{-10}$ & $1.360458 \times 10^{-10}$ & $1.386713 \times 10^{-13}$ & --- \\
+$\tau_0/8$ & $1.150777 \times 10^{-9}$ & $1.144709 \times 10^{-9}$ & $1.145491 \times 10^{-9}$ & $1.131419 \times 10^{-9}$ \\
 \hline
 \end{tabular}
-\end{table}
 
-Наблюдается уменьшение ошибки в 2 раза при уменьшении шага в 2 раза, что соответствует первому порядку. Однако для полиномиального решения ошибка находится на уровне машинной точности, поэтому точное определение порядка затруднено.
+\medskip
 
-\subsection{Неустойчивые решения}
-При нарушении условия устойчивости $\tau^2/h^2 \ge 1$ решение разрушается. На рисунках \ref{fig:unstable1}-\ref{fig:unstable6} показаны графики неустойчивых решений.
+
+
+\paragraph{Графики решения:}
+
+\subparagraph{Устойчивое решение на стабильной сетке:}
+
+\centering
+\includegraphics[width=0.9\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear-quadratic/stable.png}
+\captionof{figure}{Устойчивое решение в разные моменты времени $t$}
+\label{fig:quadratic_stable}
+
+\medskip
+
+Далее, аналогично первому тесту будут показаны графики, на которых решение разрушается. 
+В этих случаях условие устойчивости нарушено: $\tau > h/\sqrt{a}$.
+
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/unstable_dt0_dx1.png}
-\caption{$\tau = \tau_0$, $h = h_0/2$ (courant = 1.01)}
-\label{fig:unstable1}
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear-quadratic/unstable_dt0_dx1.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/2$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable1}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/unstable_dt0_dx2.png}
-\caption{$\tau = \tau_0$, $h = h_0/4$ (courant = 4.04)}
-\label{fig:unstable2}
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear-quadratic/unstable_dt0_dx2.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/4$, courant $\approx 3.8$}
+    \label{fig:quadratic_unstable2}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/unstable_dt0_dx3.png}
-\caption{$\tau = \tau_0$, $h = h_0/8$ (courant = 16.16)}
-\label{fig:unstable3}
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear-quadratic/unstable_dt0_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/8$, courant $\approx 7.6$}
+    \label{fig:quadratic_unstable3}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/unstable_dt1_dx2.png}
-\caption{$\tau = \tau_0/2$, $h = h_0/2$ (courant = 0.252) — устойчиво}
-\label{fig:unstable4}
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear-quadratic/unstable_dt1_dx2.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/2$, $h = h_0/4$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable4}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/unstable_dt1_dx3.png}
-\caption{$\tau = \tau_0/2$, $h = h_0/4$ (courant = 1.01)}
-\label{fig:unstable5}
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear-quadratic/unstable_dt1_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/2$, $h = h_0/8$, courant $\approx 3.8$}
+    \label{fig:quadratic_unstable5}
 \end{figure}
 
 \begin{figure}[H]
-\centering
-\includegraphics[width=0.45\textwidth]{figures/unstable_dt2_dx3.png}
-\caption{$\tau = \tau_0/2$, $h = h_0/8$ (courant = 4.04)}
-\label{fig:unstable6}
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Linear-quadratic/unstable_dt2_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/4$, $h = h_0/8$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable6}
 \end{figure}
 
-\section{Выводы}
+\paragraph{Вывод:}
+в тесте с линейно-квадратичной функцией схема "крест" показала точное решение с погрешностью на уровне машинной точности.
+При нарушении условия устойчивости наблюдается разрушение решения.
 
-На основе проведенных численных экспериментов можно сделать следующие выводы:
+\subsubsection{Тест 3: Параболоиды}
+\[
+y(t,x) = 2x^2 + 3t^2 + 1
+\]
+\[
+y_{tt} = 6,\quad y_{xx} = 4 \quad\Rightarrow\quad f(t,x) = 6 - 4a = 2
+\]
+\[
+\varphi(x) = 2x^2 + 1,\quad v(x) = 0
+\]
+\[
+g_0(t) = 3t^2 + 1,\quad g_L(t) = 2L^2 + 3t^2 + 1
+\]
 
-\begin{enumerate}
-    \item Разностная схема "Крест" реализована корректно — численное решение совпадает с точным с машинной точностью для тестового примера.
-    \item Схема является условно устойчивой. При выполнении условия $\tau^2/h^2 < 1$ решение устойчиво, при нарушении — происходит разрушение решения (появление высокочастотных осцилляций и неограниченный рост амплитуды).
-    \item Полученные результаты соответствуют теоретическим свойствам схемы.
-\end{enumerate}
+\medskip
+
+\centering
+\captionof{table}{Нормы погрешности при различных шагах сетки}
+\begin{tabular}{c|c|c|c|c}
+\hline
+& $h_0$ & $h_0/2$ & $h_0/4$ & $h_0/8$ \\
+\hline
+$\tau_0$ & $1.273293 \times 10^{-10}$ & --- & --- & --- \\
+$\tau_0/2$ & $9.176233 \times 10^{-10}$ & $9.153496 \times 10^{-10}$ & --- & --- \\
+$\tau_0/4$ & $3.506045 \times 10^{-9}$ & $3.612911 \times 10^{-9}$ & $3.544244 \times 10^{-9}$ & --- \\
+$\tau_0/8$ & $1.513854 \times 10^{-8}$ & $1.491253 \times 10^{-8}$ & $1.480089 \times 10^{-8}$ & $1.483880 \times 10^{-8}$ \\
+\hline
+\end{tabular}
+
+\medskip
+
+
+\paragraph{Графики решения:}
+
+\subparagraph{Устойчивое решение на стабильной сетке:}
+
+\centering
+\includegraphics[width=0.9\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Paraboloid/stable.png}
+\captionof{figure}{Устойчивое решение в разные моменты времени $t$}
+\label{fig:quadratic_stable}
+
+\medskip
+
+Графики, на которых решение разрушается. 
+В этих случаях условие устойчивости нарушено: $\tau > h/\sqrt{a}$.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Paraboloid/unstable_dt0_dx1.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/2$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Paraboloid/unstable_dt0_dx2.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/4$, courant $\approx 3.8$}
+    \label{fig:quadratic_unstable2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Paraboloid/unstable_dt0_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/8$, courant $\approx 7.6$}
+    \label{fig:quadratic_unstable3}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Paraboloid/unstable_dt1_dx2.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/2$, $h = h_0/4$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable4}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Paraboloid/unstable_dt1_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/2$, $h = h_0/8$, courant $\approx 3.8$}
+    \label{fig:quadratic_unstable5}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/Paraboloid/unstable_dt2_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/4$, $h = h_0/8$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable6}
+\end{figure}
+
+\paragraph{Вывод:}
+в тесте с парабалоидами схема "крест" показала точное решение с погрешностью на уровне машинной точности.
+При нарушении условия устойчивости наблюдается разрушение решения.
+
+
+
+\subsubsection{Тест 4: Индивидуальная функция}
+\[
+y(t,x) = 3 + t - \sin(\arctg x) = 3 + t - \frac{x}{\sqrt{1+x^2}}
+\]
+\[
+y_t = 1,\quad y_{tt} = 0,\quad y_x = -\frac{1}{(1+x^2)^{3/2}},\quad y_{xx} = \frac{3x}{(1+x^2)^{5/2}}
+\]
+\[
+f(t,x) = y_{tt} - a y_{xx} = -\frac{3a x}{(1+x^2)^{5/2}} = -\frac{3x}{(1+x^2)^{5/2}}
+\]
+\[
+\varphi(x) = 3 - \frac{x}{\sqrt{1+x^2}},\quad v(x) = 1
+\]
+\[
+g_0(t) = 3 + t,\quad g_L(t) = 3 + t - \frac{L}{\sqrt{1+L^2}}
+\]
+
+\medskip
+
+\centering
+\captionof{table}{Нормы погрешности при различных шагах сетки}
+\begin{tabular}{c|c|c|c|c}
+\hline
+& $h_0$ & $h_0/2$ & $h_0/4$ & $h_0/8$ \\
+\hline
+$\tau_0$ & $0.000003$ & --- & --- & --- \\
+$\tau_0/2$ & $0.000003$ & $6.850036 \times 10^{-7}$ & --- & --- \\
+$\tau_0/4$ & $0.000003$ & $6.850036 \times 10^{-7}$ & $1.712502 \times 10^{-7}$ & --- \\
+$\tau_0/8$ & $0.000003$ & $6.850036 \times 10^{-7}$ & $1.712502 \times 10^{-7}$ & $4.281388 \times 10^{-8}$ \\
+\hline
+\end{tabular}
+
+\medskip
+
+
+\paragraph{Графики решения:}
+
+\subparagraph{Устойчивое решение на стабильной сетке:}
+
+\centering
+\includegraphics[width=0.9\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/My example/stable.png}
+\captionof{figure}{Устойчивое решение в разные моменты времени $t$}
+\label{fig:quadratic_stable}
+
+\medskip
+
+Графики, на которых решение разрушается. 
+В этих случаях условие устойчивости нарушено: $\tau > h/\sqrt{a}$.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/My example/unstable_dt0_dx1.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/2$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/My example/unstable_dt0_dx2.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/4$, courant $\approx 3.8$}
+    \label{fig:quadratic_unstable2}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/My example/unstable_dt0_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0$, $h = h_0/8$, courant $\approx 7.6$}
+    \label{fig:quadratic_unstable3}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/My example/unstable_dt1_dx2.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/2$, $h = h_0/4$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable4}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/My example/unstable_dt1_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/2$, $h = h_0/8$, courant $\approx 3.8$}
+    \label{fig:quadratic_unstable5}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{C:/Unik/Data_Science/-Difference-schemes-analys/figures/My example/unstable_dt2_dx3.png}
+    \caption{Неустойчивое решение: $\tau = \tau_0/4$, $h = h_0/8$, courant $\approx 1.9$}
+    \label{fig:quadratic_unstable6}
+\end{figure}
+
+\paragraph{Вывод:}
+в моём индивидуальном варианте в ходе эксперимента я подтвердил теоритическую погрешность на практике: если посмотреть на значения на диагонали
+в таблице ошибок, можно увидеть, что погрешность аппроксимации стремится к 4, а это как раз даёт второй порядок аппроксимации.
+Также из таблицы видно, что ошибка по $h$ превалирует над ошибкой по $\tau$, что опять же согласуется с аналитическим решением. В итоге 
+погрешность ведёт себя как $O(h^2)$, что сходится с теоритической погрешностью $O(h^2 + \tau^2)$
+
+\medskip
+
+\subsubsection{Общий вывод для разностной схемы "крест"}
+
+По итогам эксперимента я выяснил несколько важных вещей и тонкостей, связанных с Р-С "крест" для волнового уравнения.
+
+\medskip
+
+1) Р-С "крест" условно-устойчива и, подбирая базовый шаг и количество точек для сетки, нужно удостовериться в гарантированном
+выполнении условия устойчивости. В ходе эксперимента я недостаточно внимательно отнёсся к подбору шагов по $\tau$ и $h$, а именно:
+выбрал количество точек по пространству и времени ``на авось'', при этом теоритически, условие устойчивости выполнялось, НО!
+Число Куранта было очень близко к единице ~0.99 с хвостиком, что, казалось бы, соответствует норме. ($\tau < h $ при $ \alpha = 1$) В итоге такая "хлипкая" 
+устойчивость приводила к постепенному разрушению решения, которое в нормальных условиях (число Куранта хотя бы на пару процентов меньше 0.99)
+должно было бы совпадать с машинной точностью с точным решением. Вот так я столкнулся с невидимой для меня проблемой: условие устойчивости
+выполнялось лишь теоритически, но не практически(0.999... + учитываем машинную точность: такое число Куранта приводлило к огромной погрешности $10^{-2}$)
+
+\medskip
+
+2) Подбирая число точек на сетке, нужно искать оптимальное соотношение для того, чтобы достаточно точно найти моменты времени
+на сетке, в которых мы смотрим точное решение. 
+
+\medskip
+
+3) В завершении, результаты приведены для числа Куранта ~0.95, никаких несоответствий при таком значении не было.
+В теории, можно привести граничное число Куранта (подходящее "на бумаге"), после которого погрешность начнёт стремильно расти и дестабилизировать решение.
+
+
 
 \end{document}

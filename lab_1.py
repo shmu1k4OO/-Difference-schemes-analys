@@ -5,27 +5,27 @@ import os
 
 
 def f(x, t):
-    return -2 
+    return -3*x / (1 + x**2)**(5/2)
 
 
 def phi(x):
-    return x**2 + 1
+    return 3 - ( x / (1 + x**2)**(1/2) )
 
 
 def dphi(x):
-    return 2 * np.ones_like(x)
+    return 1 * np.ones_like(x)
 
 
 def g_0(t):
-    return 2 * t + 1
+    return 3 + t
 
 
 def g_L(t, L):
-    return L**2 + 2 * t + 1
+    return 3 + t - ( L / (1 + L**2)**(1/2) )
 
 
 def exact_solve(x, t):
-    return x ** 2 + 2 * t + 1
+    return 3 + t - ( x / (1 + x**2)**(1/2) )
 
 
 def solve_with_method_1(u, x, t, v, dt, dx, alpha, f, L):
@@ -58,18 +58,16 @@ def solve_with_method_1(u, x, t, v, dt, dx, alpha, f, L):
 
 
 L = 1.0
-T = 10 * L
-
+T = 10 *L
 alpha = 1.0
-
 
 # =====================================================
 # РЕШЕНИЕ НА БАЗОВОЙ СЕТКЕ
 # =====================================================
 
 
-nx = 100
-nt = 1000
+nx = 191
+nt = 2001
 
 dx = L / (nx - 1)
 dt = T / (nt - 1)
@@ -83,7 +81,6 @@ v = dphi(x)
 X, T_grid = np.meshgrid(x, t)
 u_exact = exact_solve(X, T_grid)
 u = solve_with_method_1(u, x, t, v, dt, dx, alpha, f, L)
-
 #моменты времени от t = 0 до t = 5
 plt.figure(figsize=(20, 8))
 plt.subplot(1, 2, 1)
@@ -106,8 +103,10 @@ plt.ylabel('u')
 plt.title('Проекция приближенного решения в разные моменты времени')
 plt.grid(True)
 plt.legend()
-
+plt.tight_layout()
+plt.savefig(f'figures/My example/stable.png', dpi=150, bbox_inches='tight')
 plt.show()
+plt.close()
 
 
 # =====================================================
@@ -153,11 +152,11 @@ for step_tau in range(n_levels):
         error = np.max(np.abs(u - u_exact))
         errors[step_tau, step_h] = error
 
-        courant = alpha * current_dt**2 / current_dx**2
+        courant = alpha * current_dt / current_dx
 
         if courant >= 1:
 
-            print(f"dt/2^{step_tau}, dx/2^{step_h}: courant={courant:.3f}")
+            print(f"dt^{step_tau}, dx^{step_h}: courant={courant:.3f}")
             errors[step_tau, step_h] = np.nan
             # continue
             #моменты времени от t = 0 до t = 5
@@ -183,13 +182,9 @@ for step_tau in range(n_levels):
             plt.grid(True)
             plt.legend()
             plt.tight_layout()
-            plt.savefig(f'figures/unstable_dt{step_tau}_dx{step_h}.png', dpi=150, bbox_inches='tight')
+            plt.savefig(f'figures/My example/unstable_dt{step_tau}_dx{step_h}.png', dpi=150, bbox_inches='tight')
             plt.show()
-            plt.close()
-
-
-
-        
+            plt.close()        
 
         print(f"dt/2^{step_tau}, dx/2^{step_h}: courant={courant:.3f}, error={error:.3f}")
     
@@ -198,5 +193,5 @@ errors_from_steps = pd.DataFrame(errors, index=row_names, columns=col_names)
 print(errors_from_steps)
 
 print("Погрешность аппроксимации:")
-for k in range(1, errors.shape[0]):
-    print(errors[k-1, k-1] / errors[k, k])
+for i in range(1, errors.shape[0]):
+    print(f"при t={i}: {errors[i-1, i-1] / errors[i, i]}")
