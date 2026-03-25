@@ -8,7 +8,6 @@
 *.fls
 *.fdb_latexmk
 *.synctex.gz
-*.pdf
 
 # Python
 __pycache__/
