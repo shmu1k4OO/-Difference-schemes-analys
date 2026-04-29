@@ -56,7 +56,6 @@ def thomas_algorithm(A, B, C, D):
     
     n = len(D)
     
-    # Прямой ход
     P = np.zeros(n)
     Q = np.zeros(n)
     
@@ -69,7 +68,6 @@ def thomas_algorithm(A, B, C, D):
             P[k] = -C[k] / denom
         Q[k] = (D[k] - A[k] * Q[k-1]) / denom
     
-    # Обратный ход
     u = np.zeros(n)
     u[-1] = Q[-1]
     for k in range(n-2, -1, -1):
@@ -230,7 +228,7 @@ for step_tau in range(n_levels):
 
                 print(f"dt^{step_tau}, dx^{step_h}: courant={courant:.3f}")
                 errors[step_tau, step_h] = np.nan
-                # continue
+                
                 #моменты времени от t = 0 до t = 5
                 plt.figure(figsize=(20, 8))
                 plt.subplot(1, 2, 1)
